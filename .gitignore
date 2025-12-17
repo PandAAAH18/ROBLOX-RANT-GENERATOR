@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Media Files
+*.mp3
+*.mp4
+*.wav
+*.m4a
+!assets/
+!assets/memes/
+!assets/background/
+
+# IDEs
+.idea/
+.vscode/
+
+# Project Specific
+templates.json
+temp-audio.m4a
