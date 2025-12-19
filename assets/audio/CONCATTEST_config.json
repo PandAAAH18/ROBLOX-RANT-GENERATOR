@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "title": "Generated Video",
+    "background_video": "assets/background/gameplay.mp4",
+    "caption_style": "default",
+    "audio_file": "CONCATTEST.mp3"
+  },
+  "sentences": [
+    {
+      "sentence_index": 0,
+      "text": "don't won't isn't.",
+      "start_ms": 0,
+      "end_ms": 660,
+      "words": [
+        {
+          "text": "don't",
+          "start_ms": 0,
+          "end_ms": 206
+        },
+        {
+          "text": "won't",
+          "start_ms": 206,
+          "end_ms": 413
+        },
+        {
+          "text": "isn't",
+          "start_ms": 413,
+          "end_ms": 619
+        },
+        {
+          "text": ".",
+          "start_ms": 619,
+          "end_ms": 660
+        }
+      ]
+    },
+    {
+      "sentence_index": 1,
+      "text": "help.",
+      "start_ms": 660,
+      "end_ms": 811,
+      "words": [
+        {
+          "text": "help",
+          "start_ms": 660,
+          "end_ms": 780
+        },
+        {
+          "text": ".",
+          "start_ms": 780,
+          "end_ms": 810
+        }
+      ]
+    },
+    {
+      "sentence_index": 2,
+      "text": "$3000000 $300,000",
+      "start_ms": 811,
+      "end_ms": 4275,
+      "words": [
+        {
+          "text": "$",
+          "start_ms": 811,
+          "end_ms": 1027
+        },
+        {
+          "text": "3000000",
+          "start_ms": 1027,
+          "end_ms": 2542
+        },
+        {
+          "text": "$",
+          "start_ms": 2542,
+          "end_ms": 2759
+        },
+        {
+          "text": "300",
+          "start_ms": 2759,
+          "end_ms": 3408
+        },
+        {
+          "text": ",",
+          "start_ms": 3408,
+          "end_ms": 3625
+        },
+        {
+          "text": "000",
+          "start_ms": 3625,
+          "end_ms": 4274
+        }
+      ]
+    }
+  ]
+}

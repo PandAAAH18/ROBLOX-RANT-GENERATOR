@@ -120,8 +120,9 @@ class VSubTTSGenerator:
     
     def parse_sentence(self, sentence: str) -> List[str]:
         """Parse sentence into words"""
-        # Split by word boundaries, preserving punctuation
-        words = re.findall(r'\b\w+\b|[^\w\s]', sentence)
+        # Split by word boundaries, handling contractions with apostrophes
+        # Match words (including contractions like don't, won't) and separate punctuation
+        words = re.findall(r"\b\w+(?:'\w+)?\b|[^\w\s']", sentence)
         return [w for w in words if w.strip()]
     
     async def get_available_voices(self):
