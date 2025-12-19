@@ -580,6 +580,7 @@ class VSubApp:
         
         self.generator = VSubTTSGenerator()
         self.current_sentence_index = 0
+        self.selected_word_index = 0
         
         # Variables
         self.voice_var = tk.StringVar(value="en-US-ChristopherNeural")
@@ -636,6 +637,12 @@ class VSubApp:
         self.root.bind('<Control-o>', lambda e: self.load_project())
         self.root.bind('<Control-s>', lambda e: self.save_project())
         self.root.bind('<Control-Shift-S>', lambda e: self.save_project_as())
+        
+        # Bind arrow keys for navigation
+        self.root.bind('<Up>', self.on_arrow_up)
+        self.root.bind('<Down>', self.on_arrow_down)
+        self.root.bind('<Left>', self.on_arrow_left)
+        self.root.bind('<Right>', self.on_arrow_right)
     
     def new_project(self):
         """Create a new project"""
@@ -846,7 +853,7 @@ class VSubApp:
         input_group = ttk.LabelFrame(self.tab_script, text="Input Text", padding=10)
         input_group.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
         
-        self.text_input = scrolledtext.ScrolledText(input_group, height=10, wrap=tk.WORD)
+        self.text_input = scrolledtext.ScrolledText(input_group, height=5, wrap=tk.WORD)
         self.text_input.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
         
         btn_frame = ttk.Frame(input_group)
@@ -1110,10 +1117,10 @@ class VSubApp:
 
         # Timeline Visualization
         self.timeline_frame = ttk.LabelFrame(editor_tab, text="Timeline Properties", padding=10)
-        self.timeline_frame.pack(fill=tk.X, pady=10)
+        self.timeline_frame.pack(fill=tk.BOTH, expand=True, pady=10)
         
-        self.timeline_canvas = tk.Canvas(self.timeline_frame, height=100, bg='white')
-        self.timeline_canvas.pack(side=tk.TOP, fill=tk.X, expand=True)
+        self.timeline_canvas = tk.Canvas(self.timeline_frame, height=150, bg='white')
+        self.timeline_canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
         timeline_scroll = ttk.Scrollbar(self.timeline_frame, orient="horizontal", command=self.timeline_canvas.xview)
         timeline_scroll.pack(side=tk.BOTTOM, fill=tk.X)
@@ -1277,12 +1284,17 @@ class VSubApp:
             
         flow_frame.config(state='disabled')
         
-        # Reset properties panel
-        self.selected_word = None
-        self.lbl_selected_word.config(text="[None]")
-        self.entry_word_pitch.delete(0, tk.END)
-        self.entry_word_rate.delete(0, tk.END)
-        self.config_props_state('disabled')
+        # Auto-select first word if available
+        if sentence.words:
+            self.selected_word_index = 0
+            self.on_word_click(sentence.words[0], 0)
+        else:
+            # Reset properties panel if no words
+            self.selected_word = None
+            self.lbl_selected_word.config(text="[None]")
+            self.entry_word_pitch.delete(0, tk.END)
+            self.entry_word_rate.delete(0, tk.END)
+            self.config_props_state('disabled')
         
         # Disable image buttons
         if hasattr(self, 'btn_apply_lib_img'):
@@ -1990,6 +2002,60 @@ class VSubApp:
         sample = """Old Roblox was SO much better and I'm tired of pretending it's not. Like, we had GUESTS. Those yellow dudes just hanging out in every game. Roblox deleted them for "being confusing." Bruh what? And remember TIX? Free currency just for logging in? You could earn Robux without paying. Now? Everything costs money."""
         self.text_input.delete("1.0", tk.END)
         self.text_input.insert("1.0", sample)
+
+    def on_arrow_up(self, event):
+        """Select previous sentence with Up arrow"""
+        if not self.generator.sentences:
+            return
+        idx = self.current_sentence_index - 1
+        if idx >= 0:
+            self.current_sentence_index = idx
+            self.sentence_list.selection_clear(0, tk.END)
+            self.sentence_list.selection_set(idx)
+            self.sentence_list.see(idx)
+            self.display_current_sentence()
+            self.update_status(f"Sentence {idx + 1} selected")
+
+    def on_arrow_down(self, event):
+        """Select next sentence with Down arrow"""
+        if not self.generator.sentences:
+            return
+        idx = self.current_sentence_index + 1
+        if idx < len(self.generator.sentences):
+            self.current_sentence_index = idx
+            self.sentence_list.selection_clear(0, tk.END)
+            self.sentence_list.selection_set(idx)
+            self.sentence_list.see(idx)
+            self.display_current_sentence()
+            self.update_status(f"Sentence {idx + 1} selected")
+
+    def on_arrow_left(self, event):
+        """Select previous word in current sentence with Left arrow"""
+        if not self.generator.sentences or self.current_sentence_index >= len(self.generator.sentences):
+            return
+        sentence = self.generator.sentences[self.current_sentence_index]
+        if not sentence.words:
+            return
+        idx = self.selected_word_index - 1
+        if idx >= 0:
+            self.selected_word_index = idx
+            word = sentence.words[idx]
+            self.on_word_click(word, idx)
+            self.update_status(f"Word {idx + 1} selected")
+
+    def on_arrow_right(self, event):
+        """Select next word in current sentence with Right arrow"""
+        if not self.generator.sentences or self.current_sentence_index >= len(self.generator.sentences):
+            return
+        sentence = self.generator.sentences[self.current_sentence_index]
+        if not sentence.words:
+            return
+        idx = self.selected_word_index + 1
+        if idx < len(sentence.words):
+            self.selected_word_index = idx
+            word = sentence.words[idx]
+            self.on_word_click(word, idx)
+            self.update_status(f"Word {idx + 1} selected")
 
 def main():
     root = tk.Tk()
