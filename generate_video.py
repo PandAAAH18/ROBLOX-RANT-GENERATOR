@@ -57,13 +57,15 @@ def generate_video(config_path):
         print("No background video found, using solid color.")
         video_clip = ColorClip(size=(1920, 1080), color=(0, 0, 0), duration=duration)
     
-    # 3. Create Overlays (Images)
+    # 3. Create Overlays (Images) and collect sound effects
     clips = [video_clip]
+    audio_effects = []  # List to store sound effect clips
     
     print("Processing events...")
     for sent in sentences:
         words = sent.get('words', [])
         for word in words:
+            # Process images
             if 'image' in word:
                 img_data = word['image']
                 img_path = img_data.get('path')
@@ -94,6 +96,36 @@ def generate_video(config_path):
                         img_clip = img_clip.with_position(('right', 'bottom'))
                     
                     clips.append(img_clip)
+            
+            # Process audio effects
+            if 'audio' in word:
+                audio_data = word['audio']
+                audio_path = audio_data.get('path')
+                
+                if audio_path and os.path.exists(audio_path):
+                    try:
+                        start_t = audio_data.get('absolute_start_ms', 0) / 1000.0
+                        volume = audio_data.get('volume', 1.0)
+                        
+                        # Load audio effect
+                        sfx_clip = AudioFileClip(audio_path)
+                        
+                        # Apply volume
+                        if volume != 1.0:
+                            sfx_clip = sfx_clip.with_volume_scaled(volume)
+                        
+                        # Set start time
+                        sfx_clip = sfx_clip.with_start(start_t)
+                        
+                        # Handle duration
+                        dur_ms = audio_data.get('duration_ms')
+                        if dur_ms and dur_ms > 0:
+                            sfx_clip = sfx_clip.with_duration(dur_ms / 1000.0)
+                        
+                        audio_effects.append(sfx_clip)
+                        print(f"Added sound effect: {os.path.basename(audio_path)} at {start_t:.2f}s, volume={volume}")
+                    except Exception as e:
+                        print(f"Warning: Could not load sound effect '{audio_path}': {e}")
 
     print("Generating captions...")
     # Get caption settings
@@ -156,7 +188,16 @@ def generate_video(config_path):
                 # Likely ImageMagick missing or font issue
 
     print("Compositing video...")
-    final_video = CompositeVideoClip(clips).with_audio(audio)
+    
+    # Mix audio effects with main TTS audio
+    if audio_effects:
+        print(f"Mixing {len(audio_effects)} sound effects with TTS audio...")
+        # Combine all audio clips
+        all_audio = [audio] + audio_effects
+        mixed_audio = CompositeAudioClip(all_audio)
+        final_video = CompositeVideoClip(clips).with_audio(mixed_audio)
+    else:
+        final_video = CompositeVideoClip(clips).with_audio(audio)
     
     # 5. Export
     output_filename = os.path.splitext(config_path)[0] + ".mp4"

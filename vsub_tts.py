@@ -987,12 +987,11 @@ class VSubApp:
             if sel:
                 path = self.audio_list.get(sel[0])
                 try:
-                    # Use pygame or winsound to play
-                    import winsound
-                    winsound.PlaySound(path, winsound.SND_FILENAME | winsound.SND_ASYNC)
+                    # Open audio file with default system player
+                    os.startfile(path)
                     self.update_status(f"Playing: {os.path.basename(path)}")
                 except Exception as e:
-                    messagebox.showwarning("Playback Error", f"Could not play audio: {str(e)}\\nMake sure the file format is supported.")
+                    messagebox.showwarning("Playback Error", f"Could not play audio: {str(e)}")
 
         ttk.Button(audio_ctrl, text="🔄 Refresh", command=refresh_audio_lib).pack(side=tk.LEFT, padx=2)
         ttk.Button(audio_ctrl, text="➕ Add Audio...", command=add_to_audio_lib).pack(side=tk.LEFT, padx=2)
@@ -1504,10 +1503,10 @@ class VSubApp:
         def clear():
             path_var.set("")
             # Don't save yet, let user click save
-            
+        
+        ttk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side=tk.LEFT)
+        ttk.Button(btn_frame, text="Clear Image", command=clear).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Save", command=save).pack(side=tk.RIGHT)
-        ttk.Button(btn_frame, text="Clear Image", command=clear).pack(side=tk.RIGHT, padx=5)
-        ttk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side=tk.RIGHT, padx=5)
 
     def apply_word_settings(self):
         if self.selected_word:
@@ -1893,8 +1892,8 @@ class VSubApp:
             p = path_var.get()
             if p and os.path.exists(p):
                 try:
-                    import winsound
-                    winsound.PlaySound(p, winsound.SND_FILENAME | winsound.SND_ASYNC)
+                    # Open with default audio player
+                    os.startfile(p)
                 except Exception as e:
                     messagebox.showwarning("Playback Error", f"Could not play: {str(e)}")
                     
