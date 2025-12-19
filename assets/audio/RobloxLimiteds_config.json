@@ -1,0 +1,1026 @@
+{
+  "metadata": {
+    "title": "Generated Video",
+    "background_video": "assets/background/gameplay.mp4",
+    "caption_style": "default",
+    "audio_file": "RobloxLimiteds.mp3"
+  },
+  "sentences": [
+    {
+      "sentence_index": 0,
+      "text": "Okay so Roblox just invented the most life-changing digital economy ever.",
+      "start_ms": 0,
+      "end_ms": 3269,
+      "words": [
+        {
+          "text": "Okay",
+          "start_ms": 0,
+          "end_ms": 207
+        },
+        {
+          "text": "so",
+          "start_ms": 207,
+          "end_ms": 311
+        },
+        {
+          "text": "Roblox",
+          "start_ms": 311,
+          "end_ms": 622,
+          "image": {
+            "path": "assets/memes\\robloxdora.jpg",
+            "start_ms": 0,
+            "duration_ms": 1000,
+            "position": "center",
+            "scale": 1.0,
+            "absolute_start_ms": 311
+          }
+        },
+        {
+          "text": "just",
+          "start_ms": 622,
+          "end_ms": 830
+        },
+        {
+          "text": "invented",
+          "start_ms": 830,
+          "end_ms": 1245
+        },
+        {
+          "text": "the",
+          "start_ms": 1245,
+          "end_ms": 1401
+        },
+        {
+          "text": "most",
+          "start_ms": 1401,
+          "end_ms": 1608
+        },
+        {
+          "text": "life",
+          "start_ms": 1608,
+          "end_ms": 1816
+        },
+        {
+          "text": "-",
+          "start_ms": 1816,
+          "end_ms": 1868
+        },
+        {
+          "text": "changing",
+          "start_ms": 1868,
+          "end_ms": 2283
+        },
+        {
+          "text": "digital",
+          "start_ms": 2283,
+          "end_ms": 2646
+        },
+        {
+          "text": "economy",
+          "start_ms": 2646,
+          "end_ms": 3010,
+          "image": {
+            "path": "assets/memes\\economy.jpg",
+            "start_ms": 0,
+            "duration_ms": 1000,
+            "position": "center",
+            "scale": 1.0,
+            "absolute_start_ms": 2646
+          }
+        },
+        {
+          "text": "ever",
+          "start_ms": 3010,
+          "end_ms": 3217
+        },
+        {
+          "text": ".",
+          "start_ms": 3217,
+          "end_ms": 3269
+        }
+      ]
+    },
+    {
+      "sentence_index": 1,
+      "text": "Its literally gambling for kids.",
+      "start_ms": 3269,
+      "end_ms": 5379,
+      "words": [
+        {
+          "text": "Its",
+          "start_ms": 3269,
+          "end_ms": 3495
+        },
+        {
+          "text": "literally",
+          "start_ms": 3495,
+          "end_ms": 4173
+        },
+        {
+          "text": "gambling",
+          "start_ms": 4173,
+          "end_ms": 4775,
+          "image": {
+            "path": "assets/memes\\gambling.jpg",
+            "start_ms": 0,
+            "duration_ms": 1000,
+            "position": "center",
+            "scale": 1.0,
+            "absolute_start_ms": 4173
+          }
+        },
+        {
+          "text": "for",
+          "start_ms": 4775,
+          "end_ms": 5001
+        },
+        {
+          "text": "kids",
+          "start_ms": 5001,
+          "end_ms": 5303
+        },
+        {
+          "text": ".",
+          "start_ms": 5303,
+          "end_ms": 5378
+        }
+      ]
+    },
+    {
+      "sentence_index": 2,
+      "text": "Limiteds are rare items you can resell for Robux, sounds innocent, like digital trading cards.",
+      "start_ms": 5379,
+      "end_ms": 9348,
+      "words": [
+        {
+          "text": "Limiteds",
+          "start_ms": 5379,
+          "end_ms": 5775,
+          "image": {
+            "path": "assets/memes\\limiteds.jpg",
+            "start_ms": 0,
+            "duration_ms": 1000,
+            "position": "center",
+            "scale": 1.0,
+            "absolute_start_ms": 5379
+          }
+        },
+        {
+          "text": "are",
+          "start_ms": 5775,
+          "end_ms": 5924
+        },
+        {
+          "text": "rare",
+          "start_ms": 5924,
+          "end_ms": 6123
+        },
+        {
+          "text": "items",
+          "start_ms": 6123,
+          "end_ms": 6371
+        },
+        {
+          "text": "you",
+          "start_ms": 6371,
+          "end_ms": 6520
+        },
+        {
+          "text": "can",
+          "start_ms": 6520,
+          "end_ms": 6669
+        },
+        {
+          "text": "resell",
+          "start_ms": 6669,
+          "end_ms": 6966
+        },
+        {
+          "text": "for",
+          "start_ms": 6966,
+          "end_ms": 7115
+        },
+        {
+          "text": "Robux",
+          "start_ms": 7115,
+          "end_ms": 7363
+        },
+        {
+          "text": ",",
+          "start_ms": 7363,
+          "end_ms": 7413
+        },
+        {
+          "text": "sounds",
+          "start_ms": 7413,
+          "end_ms": 7711
+        },
+        {
+          "text": "innocent",
+          "start_ms": 7711,
+          "end_ms": 8108
+        },
+        {
+          "text": ",",
+          "start_ms": 8108,
+          "end_ms": 8157
+        },
+        {
+          "text": "like",
+          "start_ms": 8157,
+          "end_ms": 8356
+        },
+        {
+          "text": "digital",
+          "start_ms": 8356,
+          "end_ms": 8703
+        },
+        {
+          "text": "trading",
+          "start_ms": 8703,
+          "end_ms": 9050
+        },
+        {
+          "text": "cards",
+          "start_ms": 9050,
+          "end_ms": 9299
+        },
+        {
+          "text": ".",
+          "start_ms": 9299,
+          "end_ms": 9348
+        }
+      ]
+    },
+    {
+      "sentence_index": 3,
+      "text": "But then you look at the actual system.",
+      "start_ms": 9348,
+      "end_ms": 10899,
+      "words": [
+        {
+          "text": "But",
+          "start_ms": 9348,
+          "end_ms": 9493
+        },
+        {
+          "text": "then",
+          "start_ms": 9493,
+          "end_ms": 9687
+        },
+        {
+          "text": "you",
+          "start_ms": 9687,
+          "end_ms": 9832
+        },
+        {
+          "text": "look",
+          "start_ms": 9832,
+          "end_ms": 10026
+        },
+        {
+          "text": "at",
+          "start_ms": 10026,
+          "end_ms": 10123
+        },
+        {
+          "text": "the",
+          "start_ms": 10123,
+          "end_ms": 10269
+        },
+        {
+          "text": "actual",
+          "start_ms": 10269,
+          "end_ms": 10559
+        },
+        {
+          "text": "system",
+          "start_ms": 10559,
+          "end_ms": 10850
+        },
+        {
+          "text": ".",
+          "start_ms": 10850,
+          "end_ms": 10899
+        }
+      ]
+    },
+    {
+      "sentence_index": 4,
+      "text": "Items randomly go limited with zero warning.",
+      "start_ms": 10899,
+      "end_ms": 12890,
+      "words": [
+        {
+          "text": "Items",
+          "start_ms": 10899,
+          "end_ms": 11160
+        },
+        {
+          "text": "randomly",
+          "start_ms": 11160,
+          "end_ms": 11579
+        },
+        {
+          "text": "go",
+          "start_ms": 11579,
+          "end_ms": 11684
+        },
+        {
+          "text": "limited",
+          "start_ms": 11684,
+          "end_ms": 12051
+        },
+        {
+          "text": "with",
+          "start_ms": 12051,
+          "end_ms": 12260
+        },
+        {
+          "text": "zero",
+          "start_ms": 12260,
+          "end_ms": 12470,
+          "image": {
+            "path": "assets/memes\\3am.jpg",
+            "start_ms": 0,
+            "duration_ms": 1000,
+            "position": "center",
+            "scale": 1.0,
+            "absolute_start_ms": 12260
+          }
+        },
+        {
+          "text": "warning",
+          "start_ms": 12470,
+          "end_ms": 12836
+        },
+        {
+          "text": ".",
+          "start_ms": 12836,
+          "end_ms": 12889
+        }
+      ]
+    },
+    {
+      "sentence_index": 5,
+      "text": "Kids refresh the catalog at 3 AM hoping to flip a digital hat.",
+      "start_ms": 12890,
+      "end_ms": 15658,
+      "words": [
+        {
+          "text": "Kids",
+          "start_ms": 12890,
+          "end_ms": 13111
+        },
+        {
+          "text": "refresh",
+          "start_ms": 13111,
+          "end_ms": 13498
+        },
+        {
+          "text": "the",
+          "start_ms": 13498,
+          "end_ms": 13665
+        },
+        {
+          "text": "catalog",
+          "start_ms": 13665,
+          "end_ms": 14052
+        },
+        {
+          "text": "at",
+          "start_ms": 14052,
+          "end_ms": 14163
+        },
+        {
+          "text": "3",
+          "start_ms": 14163,
+          "end_ms": 14218
+        },
+        {
+          "text": "AM",
+          "start_ms": 14218,
+          "end_ms": 14329
+        },
+        {
+          "text": "hoping",
+          "start_ms": 14329,
+          "end_ms": 14661
+        },
+        {
+          "text": "to",
+          "start_ms": 14661,
+          "end_ms": 14772
+        },
+        {
+          "text": "flip",
+          "start_ms": 14772,
+          "end_ms": 14993
+        },
+        {
+          "text": "a",
+          "start_ms": 14993,
+          "end_ms": 15048
+        },
+        {
+          "text": "digital",
+          "start_ms": 15048,
+          "end_ms": 15436
+        },
+        {
+          "text": "hat",
+          "start_ms": 15436,
+          "end_ms": 15602
+        },
+        {
+          "text": ".",
+          "start_ms": 15602,
+          "end_ms": 15657
+        }
+      ]
+    },
+    {
+      "sentence_index": 6,
+      "text": "Theres price volatility, market manipulation, FOMO tactics.",
+      "start_ms": 15658,
+      "end_ms": 18431,
+      "words": [
+        {
+          "text": "Theres",
+          "start_ms": 15658,
+          "end_ms": 15972
+        },
+        {
+          "text": "price",
+          "start_ms": 15972,
+          "end_ms": 16233
+        },
+        {
+          "text": "volatility",
+          "start_ms": 16233,
+          "end_ms": 16757
+        },
+        {
+          "text": ",",
+          "start_ms": 16757,
+          "end_ms": 16809
+        },
+        {
+          "text": "market",
+          "start_ms": 16809,
+          "end_ms": 17123
+        },
+        {
+          "text": "manipulation",
+          "start_ms": 17123,
+          "end_ms": 17751
+        },
+        {
+          "text": ",",
+          "start_ms": 17751,
+          "end_ms": 17803
+        },
+        {
+          "text": "FOMO",
+          "start_ms": 17803,
+          "end_ms": 18013
+        },
+        {
+          "text": "tactics",
+          "start_ms": 18013,
+          "end_ms": 18379
+        },
+        {
+          "text": ".",
+          "start_ms": 18379,
+          "end_ms": 18431
+        }
+      ]
+    },
+    {
+      "sentence_index": 7,
+      "text": "Like I dont know what Roblox was thinking calling this collecting.",
+      "start_ms": 18431,
+      "end_ms": 20833,
+      "words": [
+        {
+          "text": "Like",
+          "start_ms": 18431,
+          "end_ms": 18602
+        },
+        {
+          "text": "I",
+          "start_ms": 18602,
+          "end_ms": 18645
+        },
+        {
+          "text": "dont",
+          "start_ms": 18645,
+          "end_ms": 18817
+        },
+        {
+          "text": "know",
+          "start_ms": 18817,
+          "end_ms": 18988
+        },
+        {
+          "text": "what",
+          "start_ms": 18988,
+          "end_ms": 19160
+        },
+        {
+          "text": "Roblox",
+          "start_ms": 19160,
+          "end_ms": 19417,
+          "image": {
+            "path": "assets/memes\\robloxcollecting.jpg",
+            "start_ms": 0,
+            "duration_ms": 1000,
+            "position": "center",
+            "scale": 1.0,
+            "absolute_start_ms": 19160
+          }
+        },
+        {
+          "text": "was",
+          "start_ms": 19417,
+          "end_ms": 19546
+        },
+        {
+          "text": "thinking",
+          "start_ms": 19546,
+          "end_ms": 19889
+        },
+        {
+          "text": "calling",
+          "start_ms": 19889,
+          "end_ms": 20189
+        },
+        {
+          "text": "this",
+          "start_ms": 20189,
+          "end_ms": 20361
+        },
+        {
+          "text": "collecting",
+          "start_ms": 20361,
+          "end_ms": 20790
+        },
+        {
+          "text": ".",
+          "start_ms": 20790,
+          "end_ms": 20832
+        }
+      ]
+    },
+    {
+      "sentence_index": 8,
+      "text": "Some items cost thousands of real dollars.",
+      "start_ms": 20833,
+      "end_ms": 23540,
+      "words": [
+        {
+          "text": "Some",
+          "start_ms": 20833,
+          "end_ms": 21133
+        },
+        {
+          "text": "items",
+          "start_ms": 21133,
+          "end_ms": 21509
+        },
+        {
+          "text": "cost",
+          "start_ms": 21509,
+          "end_ms": 21810
+        },
+        {
+          "text": "thousands",
+          "start_ms": 21810,
+          "end_ms": 22486,
+          "image": {
+            "path": "assets/memes\\thousands.jpg",
+            "start_ms": 0,
+            "duration_ms": 1000,
+            "position": "center",
+            "scale": 1.0,
+            "absolute_start_ms": 21810
+          }
+        },
+        {
+          "text": "of",
+          "start_ms": 22486,
+          "end_ms": 22637
+        },
+        {
+          "text": "real",
+          "start_ms": 22637,
+          "end_ms": 22937
+        },
+        {
+          "text": "dollars",
+          "start_ms": 22937,
+          "end_ms": 23463
+        },
+        {
+          "text": ".",
+          "start_ms": 23463,
+          "end_ms": 23539
+        }
+      ]
+    },
+    {
+      "sentence_index": 9,
+      "text": "The rarest one, the Dominus Empyreus, worth over 300000, for a hat that doesnt exist.",
+      "start_ms": 23540,
+      "end_ms": 28783,
+      "words": [
+        {
+          "text": "The",
+          "start_ms": 23540,
+          "end_ms": 23761
+        },
+        {
+          "text": "rarest",
+          "start_ms": 23761,
+          "end_ms": 24204
+        },
+        {
+          "text": "one",
+          "start_ms": 24204,
+          "end_ms": 24426
+        },
+        {
+          "text": ",",
+          "start_ms": 24426,
+          "end_ms": 24500
+        },
+        {
+          "text": "the",
+          "start_ms": 24500,
+          "end_ms": 24721
+        },
+        {
+          "text": "Dominus",
+          "start_ms": 24721,
+          "end_ms": 25238,
+          "image": {
+            "path": "assets/memes\\dominus.jpg",
+            "start_ms": 0,
+            "duration_ms": 1000,
+            "position": "center",
+            "scale": 1.0,
+            "absolute_start_ms": 24721
+          }
+        },
+        {
+          "text": "Empyreus",
+          "start_ms": 25238,
+          "end_ms": 25829
+        },
+        {
+          "text": ",",
+          "start_ms": 25829,
+          "end_ms": 25903
+        },
+        {
+          "text": "worth",
+          "start_ms": 25903,
+          "end_ms": 26272
+        },
+        {
+          "text": "over",
+          "start_ms": 26272,
+          "end_ms": 26568
+        },
+        {
+          "text": "300000",
+          "start_ms": 26568,
+          "end_ms": 27011
+        },
+        {
+          "text": ",",
+          "start_ms": 27011,
+          "end_ms": 27085
+        },
+        {
+          "text": "for",
+          "start_ms": 27085,
+          "end_ms": 27306
+        },
+        {
+          "text": "a",
+          "start_ms": 27306,
+          "end_ms": 27380
+        },
+        {
+          "text": "hat",
+          "start_ms": 27380,
+          "end_ms": 27602
+        },
+        {
+          "text": "that",
+          "start_ms": 27602,
+          "end_ms": 27897
+        },
+        {
+          "text": "doesnt",
+          "start_ms": 27897,
+          "end_ms": 28340
+        },
+        {
+          "text": "exist",
+          "start_ms": 28340,
+          "end_ms": 28709
+        },
+        {
+          "text": ".",
+          "start_ms": 28709,
+          "end_ms": 28783
+        }
+      ]
+    },
+    {
+      "sentence_index": 10,
+      "text": "And whos trading these, children, with no regulations, no age restrictions.",
+      "start_ms": 28783,
+      "end_ms": 32119,
+      "words": [
+        {
+          "text": "And",
+          "start_ms": 28783,
+          "end_ms": 28936
+        },
+        {
+          "text": "whos",
+          "start_ms": 28936,
+          "end_ms": 29142
+        },
+        {
+          "text": "trading",
+          "start_ms": 29142,
+          "end_ms": 29501
+        },
+        {
+          "text": "these",
+          "start_ms": 29501,
+          "end_ms": 29757
+        },
+        {
+          "text": ",",
+          "start_ms": 29757,
+          "end_ms": 29809
+        },
+        {
+          "text": "children",
+          "start_ms": 29809,
+          "end_ms": 30219
+        },
+        {
+          "text": ",",
+          "start_ms": 30219,
+          "end_ms": 30271
+        },
+        {
+          "text": "with",
+          "start_ms": 30271,
+          "end_ms": 30476
+        },
+        {
+          "text": "no",
+          "start_ms": 30476,
+          "end_ms": 30578
+        },
+        {
+          "text": "regulations",
+          "start_ms": 30578,
+          "end_ms": 31143
+        },
+        {
+          "text": ",",
+          "start_ms": 31143,
+          "end_ms": 31194
+        },
+        {
+          "text": "no",
+          "start_ms": 31194,
+          "end_ms": 31297
+        },
+        {
+          "text": "age",
+          "start_ms": 31297,
+          "end_ms": 31451
+        },
+        {
+          "text": "restrictions",
+          "start_ms": 31451,
+          "end_ms": 32067
+        },
+        {
+          "text": ".",
+          "start_ms": 32067,
+          "end_ms": 32118
+        }
+      ]
+    },
+    {
+      "sentence_index": 11,
+      "text": "Roblox really said financial literacy and meant teach kids stock market gambling.",
+      "start_ms": 32119,
+      "end_ms": 35340,
+      "words": [
+        {
+          "text": "Roblox",
+          "start_ms": 32119,
+          "end_ms": 32395
+        },
+        {
+          "text": "really",
+          "start_ms": 32395,
+          "end_ms": 32671
+        },
+        {
+          "text": "said",
+          "start_ms": 32671,
+          "end_ms": 32855
+        },
+        {
+          "text": "financial",
+          "start_ms": 32855,
+          "end_ms": 33269
+        },
+        {
+          "text": "literacy",
+          "start_ms": 33269,
+          "end_ms": 33637
+        },
+        {
+          "text": "and",
+          "start_ms": 33637,
+          "end_ms": 33775
+        },
+        {
+          "text": "meant",
+          "start_ms": 33775,
+          "end_ms": 34005
+        },
+        {
+          "text": "teach",
+          "start_ms": 34005,
+          "end_ms": 34235
+        },
+        {
+          "text": "kids",
+          "start_ms": 34235,
+          "end_ms": 34419
+        },
+        {
+          "text": "stock",
+          "start_ms": 34419,
+          "end_ms": 34649
+        },
+        {
+          "text": "market",
+          "start_ms": 34649,
+          "end_ms": 34925
+        },
+        {
+          "text": "gambling",
+          "start_ms": 34925,
+          "end_ms": 35293
+        },
+        {
+          "text": ".",
+          "start_ms": 35293,
+          "end_ms": 35339
+        }
+      ]
+    },
+    {
+      "sentence_index": 12,
+      "text": "Your 10-year-old now understands pump and dump schemes better than Wall Street.",
+      "start_ms": 35340,
+      "end_ms": 38288,
+      "words": [
+        {
+          "text": "Your",
+          "start_ms": 35340,
+          "end_ms": 35513
+        },
+        {
+          "text": "10",
+          "start_ms": 35513,
+          "end_ms": 35600
+        },
+        {
+          "text": "-",
+          "start_ms": 35600,
+          "end_ms": 35643
+        },
+        {
+          "text": "year",
+          "start_ms": 35643,
+          "end_ms": 35816
+        },
+        {
+          "text": "-",
+          "start_ms": 35816,
+          "end_ms": 35860
+        },
+        {
+          "text": "old",
+          "start_ms": 35860,
+          "end_ms": 35990
+        },
+        {
+          "text": "now",
+          "start_ms": 35990,
+          "end_ms": 36120
+        },
+        {
+          "text": "understands",
+          "start_ms": 36120,
+          "end_ms": 36597
+        },
+        {
+          "text": "pump",
+          "start_ms": 36597,
+          "end_ms": 36770
+        },
+        {
+          "text": "and",
+          "start_ms": 36770,
+          "end_ms": 36901
+        },
+        {
+          "text": "dump",
+          "start_ms": 36901,
+          "end_ms": 37074
+        },
+        {
+          "text": "schemes",
+          "start_ms": 37074,
+          "end_ms": 37378
+        },
+        {
+          "text": "better",
+          "start_ms": 37378,
+          "end_ms": 37638
+        },
+        {
+          "text": "than",
+          "start_ms": 37638,
+          "end_ms": 37811
+        },
+        {
+          "text": "Wall",
+          "start_ms": 37811,
+          "end_ms": 37985
+        },
+        {
+          "text": "Street",
+          "start_ms": 37985,
+          "end_ms": 38245
+        },
+        {
+          "text": ".",
+          "start_ms": 38245,
+          "end_ms": 38288
+        }
+      ]
+    },
+    {
+      "sentence_index": 13,
+      "text": "Humanity has been saved.",
+      "start_ms": 38288,
+      "end_ms": 39353,
+      "words": [
+        {
+          "text": "Humanity",
+          "start_ms": 38288,
+          "end_ms": 38693
+        },
+        {
+          "text": "has",
+          "start_ms": 38693,
+          "end_ms": 38845
+        },
+        {
+          "text": "been",
+          "start_ms": 38845,
+          "end_ms": 39048
+        },
+        {
+          "text": "saved",
+          "start_ms": 39048,
+          "end_ms": 39301
+        },
+        {
+          "text": ".",
+          "start_ms": 39301,
+          "end_ms": 39352
+        }
+      ]
+    }
+  ]
+}

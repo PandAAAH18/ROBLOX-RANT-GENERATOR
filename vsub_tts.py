@@ -14,6 +14,14 @@ from datetime import timedelta
 import sys
 from PIL import Image, ImageTk
 
+# Import video generation function
+try:
+    from generate_video import generate_video
+    VIDEO_GENERATION_AVAILABLE = True
+except ImportError:
+    VIDEO_GENERATION_AVAILABLE = False
+    print("Warning: generate_video.py not found. Video generation will be disabled.")
+
 @dataclass
 class WordSettings:
     """Individual word settings for pitch and rate"""
@@ -26,6 +34,11 @@ class WordSettings:
     image_duration_ms: int = 1000
     image_position: str = "center"
     image_scale: float = 1.0
+    # Audio/Sound Effect settings
+    audio_path: Optional[str] = None
+    audio_start_ms: Optional[int] = None
+    audio_duration_ms: Optional[int] = None  # None = full audio
+    audio_volume: float = 1.0  # 0.0 to 1.0
 
 @dataclass
 class SentenceSettings:
@@ -64,6 +77,32 @@ class ImageLibrary:
                     
     def get_images(self) -> List[str]:
         return self.images
+
+class AudioLibrary:
+    """Manages collection of sound effect audio files"""
+    def __init__(self, base_path: str = "assets/sounds"):
+        self.base_path = base_path
+        self.audio_files: List[str] = []
+        self._ensure_path()
+        self.refresh()
+        
+    def _ensure_path(self):
+        if not os.path.exists(self.base_path):
+            try:
+                os.makedirs(self.base_path)
+            except:
+                pass
+                
+    def refresh(self):
+        """Scan directory for audio files"""
+        self.audio_files = []
+        if os.path.exists(self.base_path):
+            for f in os.listdir(self.base_path):
+                if f.lower().endswith(('.mp3', '.wav', '.ogg', '.m4a', '.flac')):
+                    self.audio_files.append(os.path.join(self.base_path, f))
+                    
+    def get_audio_files(self) -> List[str]:
+        return self.audio_files
 
 class VSubTTSGenerator:
     def __init__(self):
@@ -210,6 +249,13 @@ class VSubTTSGenerator:
                                 'position': word.image_position,
                                 'scale': word.image_scale
                             }
+                        if word.audio_path:
+                            word_data['audio'] = {
+                                'path': word.audio_path,
+                                'start_ms': word.audio_start_ms if word.audio_start_ms is not None else 0, # Relative to word start
+                                'duration_ms': word.audio_duration_ms,
+                                'volume': word.audio_volume
+                            }
                         sentence_timestamps['words'].append(word_data)
                     
                     return idx, current_temp_file, sentence_timestamps
@@ -346,6 +392,12 @@ class VSubTTSGenerator:
                                 offset = w['image'].get('start_ms', 0)
                                 if offset is None: offset = 0
                                 w['image']['absolute_start_ms'] = int(current_word_start + offset)
+                            
+                            # Same for audio effects
+                            if 'audio' in w:
+                                offset = w['audio'].get('start_ms', 0)
+                                if offset is None: offset = 0
+                                w['audio']['absolute_start_ms'] = int(current_word_start + offset)
 
                             current_word_start += word_duration
 
@@ -523,8 +575,8 @@ class VSubTTSGenerator:
 class VSubApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("VSub TTS Generator")
-        self.root.geometry("1200x800")
+        self.root.title("VSub TTS Generator - Enhanced Edition")
+        self.root.geometry("1400x850")
         
         self.generator = VSubTTSGenerator()
         self.current_sentence_index = 0
@@ -534,14 +586,103 @@ class VSubApp:
         self.pitch_var = tk.StringVar(value="+0Hz")
         self.rate_var = tk.StringVar(value="+0%")
         
+        # Create menu bar first
+        self.create_menu_bar()
+        
         self.setup_ui()
         self.load_voices()
         self.load_templates()
         
-        # Initialize Image Library
+        # Initialize Libraries
         self.image_library = ImageLibrary()
+        self.audio_library = AudioLibrary()
         self.clipboard_img = None
     
+    def create_menu_bar(self):
+        """Create menu bar with File and Help menus"""
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+        
+        # File Menu
+        file_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="New Project", command=self.new_project, accelerator="Ctrl+N")
+        file_menu.add_command(label="Open Project...", command=self.load_project, accelerator="Ctrl+O")
+        file_menu.add_command(label="Save Project", command=self.save_project, accelerator="Ctrl+S")
+        file_menu.add_command(label="Save Project As...", command=self.save_project_as, accelerator="Ctrl+Shift+S")
+        file_menu.add_separator()
+        file_menu.add_command(label="Export Timestamps...", command=self.export_timestamps)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.root.quit)
+        
+        # Edit Menu
+        edit_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Edit", menu=edit_menu)
+        edit_menu.add_command(label="Manage Templates", command=self.open_template_manager)
+        
+        # View Menu
+        view_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="View", menu=view_menu)
+        view_menu.add_command(label="Refresh Image Library", command=self.refresh_image_library)
+        view_menu.add_command(label="Refresh Audio Library", command=self.refresh_audio_library)
+        
+        # Help Menu
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="About", command=self.show_about)
+        
+        # Bind keyboard shortcuts
+        self.root.bind('<Control-n>', lambda e: self.new_project())
+        self.root.bind('<Control-o>', lambda e: self.load_project())
+        self.root.bind('<Control-s>', lambda e: self.save_project())
+        self.root.bind('<Control-Shift-S>', lambda e: self.save_project_as())
+    
+    def new_project(self):
+        """Create a new project"""
+        if self.generator.sentences:
+            if not messagebox.askyesno("Confirm", "Discard current project and start new?"):
+                return
+        self.generator.sentences = []
+        self.generator.current_project_path = None
+        self.text_input.delete("1.0", tk.END)
+        self.update_sentence_list()
+        self.update_status("New project created")
+    
+    def save_project_as(self):
+        """Save project with new filename"""
+        old_path = self.generator.current_project_path
+        self.generator.current_project_path = None
+        self.save_project()
+        if self.generator.current_project_path is None:
+            self.generator.current_project_path = old_path
+    
+    def refresh_image_library(self):
+        """Refresh image library"""
+        self.image_library.refresh()
+        self.update_status("Image library refreshed")
+    
+    def refresh_audio_library(self):
+        """Refresh audio library"""
+        self.audio_library.refresh()
+        self.update_status("Audio library refreshed")
+    
+    def show_about(self):
+        """Show about dialog"""
+        messagebox.showinfo(
+            "About VSub TTS Generator",
+            "VSub TTS Generator - Enhanced Edition\\n\\n"
+            "A powerful tool for creating TTS audio with\\n"
+            "visual and audio effects synchronized to words.\\n\\n"
+            "Features:\\n"
+            "• Text-to-Speech with Edge TTS\\n"
+            "• Word-level pitch & rate control\\n"
+            "• Image overlays on words\\n"
+            "• Sound effects on words\\n"
+            "• Timeline visualization\\n"
+            "• Project save/load\\n\\n"
+            "Version 2.0"
+        )
+
     def load_templates(self):
         """Load templates from file"""
         self.templates = {
@@ -726,12 +867,30 @@ class VSubApp:
         
         # === TAB 2: LIBRARY ===
         
-        lib_ctrl = ttk.Frame(self.tab_library)
+        # Sentence selector at the top of Library tab
+        lib_sentence_frame = ttk.LabelFrame(self.tab_library, text="Current Sentence", padding=5)
+        lib_sentence_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        ttk.Label(lib_sentence_frame, text="Select Sentence:").pack(side=tk.LEFT, padx=5)
+        self.lib_sentence_combo = ttk.Combobox(lib_sentence_frame, state='readonly')
+        self.lib_sentence_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        self.lib_sentence_combo.bind('<<ComboboxSelected>>', self.on_lib_sentence_select)
+        
+        # Create sub-tabs for Image and Audio libraries
+        library_notebook = ttk.Notebook(self.tab_library)
+        library_notebook.pack(fill=tk.BOTH, expand=True)
+        
+        # Image Library Sub-Tab
+        image_lib_frame = ttk.Frame(library_notebook, padding=5)
+        library_notebook.add(image_lib_frame, text="🖼️ Images")
+        
+        lib_ctrl = ttk.Frame(image_lib_frame)
         lib_ctrl.pack(fill=tk.X, pady=5)
         
         def refresh_lib():
             self.image_library.refresh()
             update_lib_list()
+            self.update_status("Image library refreshed")
             
         def add_to_lib():
             files = filedialog.askopenfilenames(
@@ -751,16 +910,24 @@ class VSubApp:
                 refresh_lib()
                 messagebox.showinfo("Success", f"Added {count} images to library.")
 
-        ttk.Button(lib_ctrl, text="Refresh", command=refresh_lib).pack(side=tk.LEFT, padx=5)
-        ttk.Button(lib_ctrl, text="Add Images...", command=add_to_lib).pack(side=tk.LEFT, padx=5)
+        ttk.Button(lib_ctrl, text="🔄 Refresh", command=refresh_lib).pack(side=tk.LEFT, padx=2)
+        ttk.Button(lib_ctrl, text="➕ Add Images...", command=add_to_lib).pack(side=tk.LEFT, padx=2)
+        ttk.Button(lib_ctrl, text="📂 Open Folder", command=lambda: os.startfile(self.image_library.base_path) if os.path.exists(self.image_library.base_path) else None).pack(side=tk.LEFT, padx=2)
         
-        self.lib_list = tk.Listbox(self.tab_library)
-        self.lib_list.pack(fill=tk.BOTH, expand=True, pady=5)
+        # List with scrollbar
+        list_frame = ttk.Frame(image_lib_frame)
+        list_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        self.lib_list = tk.Listbox(list_frame)
+        self.lib_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        list_scroll = ttk.Scrollbar(list_frame, orient="vertical", command=self.lib_list.yview)
+        list_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.lib_list.config(yscrollcommand=list_scroll.set)
         
         # Preview
-        self.preview_lbl = ttk.Label(self.tab_library, text="No Preview", relief=tk.SUNKEN, anchor=tk.CENTER)
+        self.preview_lbl = ttk.Label(image_lib_frame, text="Select an image to preview", relief=tk.SUNKEN, anchor=tk.CENTER)
         self.preview_lbl.pack(fill=tk.BOTH, expand=True, pady=5, ipady=20)
-        
         
         def on_lib_select(event):
             sel = self.lib_list.curselection()
@@ -785,15 +952,104 @@ class VSubApp:
             for img in self.image_library.get_images():
                 self.lib_list.insert(tk.END, img)
         
+        # Audio Library Sub-Tab
+        audio_lib_frame = ttk.Frame(library_notebook, padding=5)
+        library_notebook.add(audio_lib_frame, text="🔊 Sound Effects")
+        
+        audio_ctrl = ttk.Frame(audio_lib_frame)
+        audio_ctrl.pack(fill=tk.X, pady=5)
+        
+        def refresh_audio_lib():
+            self.audio_library.refresh()
+            update_audio_list()
+            self.update_status("Audio library refreshed")
+            
+        def add_to_audio_lib():
+            files = filedialog.askopenfilenames(
+                title="Select Audio Files",
+                filetypes=[("Audio Files", "*.mp3 *.wav *.ogg *.m4a *.flac")]
+            )
+            if files:
+                import shutil
+                dest_dir = self.audio_library.base_path
+                count = 0
+                for f in files:
+                    try:
+                        shutil.copy2(f, dest_dir)
+                        count += 1
+                    except Exception as e:
+                        print(f"Error copying {f}: {e}")
+                refresh_audio_lib()
+                messagebox.showinfo("Success", f"Added {count} audio files to library.")
+        
+        def play_selected_audio():
+            sel = self.audio_list.curselection()
+            if sel:
+                path = self.audio_list.get(sel[0])
+                try:
+                    # Use pygame or winsound to play
+                    import winsound
+                    winsound.PlaySound(path, winsound.SND_FILENAME | winsound.SND_ASYNC)
+                    self.update_status(f"Playing: {os.path.basename(path)}")
+                except Exception as e:
+                    messagebox.showwarning("Playback Error", f"Could not play audio: {str(e)}\\nMake sure the file format is supported.")
+
+        ttk.Button(audio_ctrl, text="🔄 Refresh", command=refresh_audio_lib).pack(side=tk.LEFT, padx=2)
+        ttk.Button(audio_ctrl, text="➕ Add Audio...", command=add_to_audio_lib).pack(side=tk.LEFT, padx=2)
+        ttk.Button(audio_ctrl, text="▶️ Play", command=play_selected_audio).pack(side=tk.LEFT, padx=2)
+        ttk.Button(audio_ctrl, text="📂 Open Folder", command=lambda: os.startfile(self.audio_library.base_path) if os.path.exists(self.audio_library.base_path) else None).pack(side=tk.LEFT, padx=2)
+        
+        # Audio list with scrollbar
+        audio_list_frame = ttk.Frame(audio_lib_frame)
+        audio_list_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        self.audio_list = tk.Listbox(audio_list_frame)
+        self.audio_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        audio_scroll = ttk.Scrollbar(audio_list_frame, orient="vertical", command=self.audio_list.yview)
+        audio_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.audio_list.config(yscrollcommand=audio_scroll.set)
+        
+        # Audio info label
+        self.audio_info_lbl = ttk.Label(audio_lib_frame, text="Select an audio file to see details", relief=tk.SUNKEN, anchor=tk.W, padding=10)
+        self.audio_info_lbl.pack(fill=tk.X, pady=5)
+        
+        def on_audio_select(event):
+            sel = self.audio_list.curselection()
+            if sel:
+                path = self.audio_list.get(sel[0])
+                try:
+                    size_kb = os.path.getsize(path) / 1024
+                    filename = os.path.basename(path)
+                    self.audio_info_lbl.config(text=f"File: {filename} | Size: {size_kb:.1f} KB")
+                except Exception as e:
+                    self.audio_info_lbl.config(text=f"Error: {str(e)}")
+        
+        self.audio_list.bind('<<ListboxSelect>>', on_audio_select)
+        
+        def update_audio_list():
+            self.audio_list.delete(0, tk.END)
+            for audio in self.audio_library.get_audio_files():
+                self.audio_list.insert(tk.END, audio)
+        
         # Initial populate (use after instead to ensure library init)
         self.root.after(100, update_lib_list)
+        self.root.after(100, update_audio_list)
         
         # --- Right Panel: Editor & Generation ---
         right_panel = ttk.Frame(main_paned)
         main_paned.add(right_panel, weight=3)
         
+        # Create tabs for right panel
+        self.right_tabs = ttk.Notebook(right_panel)
+        self.right_tabs.pack(fill=tk.BOTH, expand=True)
+        
+        # Tab 1: Editor
+        editor_tab = ttk.Frame(self.right_tabs)
+        self.right_tabs.add(editor_tab, text="📝 Editor")
+        
         # Editor Area
-        self.editor_frame = ttk.LabelFrame(right_panel, text="Sentence Editor", padding=10)
+        self.editor_frame = ttk.LabelFrame(editor_tab, text="Sentence Editor", padding=10)
         self.editor_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
         
         # Full text display of selected sentence
@@ -812,16 +1068,17 @@ class VSubApp:
         # Props Controls
         p_grid = ttk.Frame(self.props_frame)
         p_grid.pack(fill=tk.X)
-        for i in range(12):
+        for i in range(14):
              p_grid.columnconfigure(i, weight=1)
         
+        # Row 0: Word name and Template
         ttk.Label(p_grid, text="Word:").grid(row=0, column=0, sticky=tk.W)
         self.lbl_selected_word = ttk.Label(p_grid, text="[None]", font=('Helvetica', 10, 'bold'))
         self.lbl_selected_word.grid(row=0, column=1, sticky=tk.W, padx=10)
         
         ttk.Label(p_grid, text="Template:").grid(row=0, column=2, sticky=tk.W, padx=(20, 5))
         self.var_word_template = tk.StringVar(value="Select Template")
-        self.combo_word_template = ttk.Combobox(p_grid, textvariable=self.var_word_template, state='disabled')
+        self.combo_word_template = ttk.Combobox(p_grid, textvariable=self.var_word_template, state='disabled', width=15)
         self.combo_word_template.grid(row=0, column=3, sticky=tk.W)
         
         ttk.Label(p_grid, text="Pitch:").grid(row=0, column=4, sticky=tk.W, padx=(20, 5))
@@ -832,18 +1089,28 @@ class VSubApp:
         self.entry_word_rate = ttk.Entry(p_grid, width=10, state='disabled')
         self.entry_word_rate.grid(row=0, column=7, sticky=tk.W)
         
-        ttk.Button(p_grid, text="Apply", command=self.apply_word_settings).grid(row=0, column=8, padx=20)
+        ttk.Button(p_grid, text="✓ Apply", command=self.apply_word_settings).grid(row=0, column=8, padx=10)
         
-        ttk.Button(p_grid, text="Apply", command=self.apply_word_settings).grid(row=0, column=8, padx=20)
+        # Row 1: Media controls (Image and Audio)
+        ttk.Label(p_grid, text="Media:", font=('Helvetica', 9, 'bold')).grid(row=1, column=0, sticky=tk.W, pady=(10, 5))
         
-        self.btn_apply_lib_img = ttk.Button(p_grid, text="Set Lib Img", command=self.apply_lib_image, state='disabled')
-        self.btn_apply_lib_img.grid(row=0, column=9, padx=5)
+        self.btn_apply_lib_img = ttk.Button(p_grid, text="🖼️ Set Image", command=self.apply_lib_image, state='disabled', width=12)
+        self.btn_apply_lib_img.grid(row=1, column=1, padx=5, pady=(10, 5))
         
-        self.btn_customize_img = ttk.Button(p_grid, text="Customize", command=self.open_image_config, state='disabled')
-        self.btn_customize_img.grid(row=0, column=10, padx=5)
+        self.btn_customize_img = ttk.Button(p_grid, text="⚙️ Config Image", command=self.open_image_config, state='disabled', width=14)
+        self.btn_customize_img.grid(row=1, column=2, columnspan=2, padx=5, pady=(10, 5))
+        
+        self.btn_apply_audio = ttk.Button(p_grid, text="🔊 Set Audio", command=self.apply_lib_audio, state='disabled', width=12)
+        self.btn_apply_audio.grid(row=1, column=4, padx=5, pady=(10, 5))
+        
+        self.btn_customize_audio = ttk.Button(p_grid, text="⚙️ Config Audio", command=self.open_audio_config, state='disabled', width=14)
+        self.btn_customize_audio.grid(row=1, column=5, columnspan=2, padx=5, pady=(10, 5))
+        
+        self.btn_clear_media = ttk.Button(p_grid, text="🗑️ Clear Media", command=self.clear_media, state='disabled', width=12)
+        self.btn_clear_media.grid(row=1, column=7, padx=5, pady=(10, 5))
 
         # Timeline Visualization
-        self.timeline_frame = ttk.LabelFrame(self.editor_frame, text="Timeline Properties", padding=10)
+        self.timeline_frame = ttk.LabelFrame(editor_tab, text="Timeline Properties", padding=10)
         self.timeline_frame.pack(fill=tk.X, pady=10)
         
         self.timeline_canvas = tk.Canvas(self.timeline_frame, height=100, bg='white')
@@ -854,22 +1121,59 @@ class VSubApp:
         
         self.timeline_canvas.configure(xscrollcommand=timeline_scroll.set)
 
-        # Generation Controls
-        gen_frame = ttk.LabelFrame(right_panel, text="Export", padding=10)
-        gen_frame.pack(fill=tk.X)
+        # Tab 2: Generation
+        generation_tab = ttk.Frame(self.right_tabs)
+        self.right_tabs.add(generation_tab, text="🎬 Generation")
         
-        ttk.Label(gen_frame, text="Title:").pack(side=tk.LEFT)
-        self.title_entry = ttk.Entry(gen_frame)
+        # Audio Generation Section
+        audio_gen_frame = ttk.LabelFrame(generation_tab, text="Audio Generation", padding=10)
+        audio_gen_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(audio_gen_frame, text="Title:").pack(side=tk.LEFT)
+        self.title_entry = ttk.Entry(audio_gen_frame)
         self.title_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=10)
         
-        self.generate_btn = ttk.Button(gen_frame, text="Generate Audio (Async)", command=self.start_generation, style="Action.TButton")
+        self.generate_btn = ttk.Button(audio_gen_frame, text="Generate Audio (Async)", command=self.start_generation, style="Action.TButton")
         self.generate_btn.pack(side=tk.RIGHT)
         
-        self.progress = ttk.Progressbar(gen_frame, mode='indeterminate')
+        self.progress = ttk.Progressbar(audio_gen_frame, mode='indeterminate')
         self.progress.pack(side=tk.RIGHT, padx=10)
         
+        # Video Generation Section
+        video_frame = ttk.LabelFrame(generation_tab, text="Video Generation", padding=10)
+        video_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        # Help text
+        ttk.Label(video_frame, text="Generate final video with TTS audio, captions, and media overlays", 
+                 font=('Segoe UI', 8), foreground='gray').pack(anchor=tk.W, pady=(0, 5))
+        
+        ttk.Label(video_frame, text="Config File:").pack(side=tk.LEFT)
+        self.config_entry = ttk.Entry(video_frame)
+        self.config_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        
+        def browse_config():
+            filename = filedialog.askopenfilename(
+                title="Select Config File",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+                initialdir=os.path.join(os.getcwd(), "assets", "audio")
+            )
+            if filename:
+                self.config_entry.delete(0, tk.END)
+                self.config_entry.insert(0, filename)
+        
+        ttk.Button(video_frame, text="Browse", command=browse_config).pack(side=tk.LEFT, padx=5)
+        self.generate_video_btn = ttk.Button(video_frame, text="Generate Video", command=self.start_video_generation, style="Action.TButton")
+        self.generate_video_btn.pack(side=tk.RIGHT)
+        
+        self.video_progress = ttk.Progressbar(video_frame, mode='indeterminate')
+        self.video_progress.pack(side=tk.RIGHT, padx=10)
+        
+        # Status bar at bottom
         self.status_var = tk.StringVar(value="Ready")
-        ttk.Label(right_panel, textvariable=self.status_var, relief=tk.SUNKEN).pack(fill=tk.X, pady=5)
+        ttk.Label(generation_tab, textvariable=self.status_var, relief=tk.SUNKEN).pack(fill=tk.X, pady=5)
+        
+        # Setup bindings for properties
+        self.combo_word_template.bind('<<ComboboxSelected>>', self.on_template_selected)
         
         # Setup bindings for properties
         self.combo_word_template.bind('<<ComboboxSelected>>', self.on_template_selected)
@@ -892,6 +1196,19 @@ class VSubApp:
             index = selection[0]
             self.current_sentence_index = index
             self.display_current_sentence()
+            # Update library combo
+            if hasattr(self, 'lib_sentence_combo') and self.lib_sentence_combo['values']:
+                self.lib_sentence_combo.current(index)
+    
+    def on_lib_sentence_select(self, event):
+        """Handle sentence selection from library tab"""
+        if self.lib_sentence_combo.current() >= 0:
+            self.current_sentence_index = self.lib_sentence_combo.current()
+            self.display_current_sentence()
+            # Update main sentence list selection
+            self.sentence_list.selection_clear(0, tk.END)
+            self.sentence_list.selection_set(self.current_sentence_index)
+            self.sentence_list.see(self.current_sentence_index)
 
     def display_current_sentence(self):
         if not self.generator.sentences:
@@ -923,13 +1240,20 @@ class VSubApp:
             btn = tk.Button(container, text=word.text, 
                           command=lambda w=word, idx=i: self.on_word_click(w, idx))
             
-            # Style button based on if it has custom settings or image
+            # Style button based on if it has custom settings, image, or audio
             has_settings = word.pitch != "+0Hz" or word.rate != "+0%"
             has_image = word.image_path is not None
+            has_audio = word.audio_path is not None
             
-            if has_image:
+            if has_image and has_audio:
+                btn.config(fg='darkviolet', font=('Segoe UI', 9, 'bold', 'underline'))
+                btn.config(bg='#ffe6f0') # Pink-purple
+            elif has_image:
                 btn.config(fg='purple', font=('Segoe UI', 9, 'bold', 'underline'))
                 btn.config(bg='#f0e6ff') # Light purple
+            elif has_audio:
+                btn.config(fg='darkgreen', font=('Segoe UI', 9, 'bold', 'italic'))
+                btn.config(bg='#e6ffe6') # Light green
             elif has_settings:
                 btn.config(fg='blue', font=('Segoe UI', 9, 'bold'))
                 btn.config(bg='#e6f3ff')
@@ -938,8 +1262,15 @@ class VSubApp:
             
             btn.pack(side=tk.TOP, fill=tk.X)
             
+            # Indicators
+            indicators = []
             if has_image:
-                img_indicator = tk.Label(container, text="📷", bg='#ffffff', font=('Segoe UI', 8))
+                indicators.append("📷")
+            if has_audio:
+                indicators.append("🔊")
+            
+            if indicators:
+                img_indicator = tk.Label(container, text=" ".join(indicators), bg='#ffffff', font=('Segoe UI', 8))
                 img_indicator.pack(side=tk.BOTTOM)
                 
             flow_frame.window_create(tk.END, window=container, padx=2, pady=2)
@@ -974,9 +1305,15 @@ class VSubApp:
         # Constants
         PX_PER_SECOND = 100
         start_x = 10
-        y_words = 60
-        y_images = 20
-        height_block = 30
+        y_words = 80
+        y_images = 40
+        y_audio = 10
+        height_block = 25
+        
+        # Draw labels
+        self.timeline_canvas.create_text(5, y_audio + 12, text="🔊", anchor="e", font=('Segoe UI', 10))
+        self.timeline_canvas.create_text(5, y_images + 12, text="📷", anchor="e", font=('Segoe UI', 10))
+        self.timeline_canvas.create_text(5, y_words + 12, text="💬", anchor="e", font=('Segoe UI', 10))
         
         current_time = 0
         
@@ -995,7 +1332,7 @@ class VSubApp:
                 fill="#e0e0e0", outline="#a0a0a0"
             )
             self.timeline_canvas.create_text(
-                start_x + (current_time/1000)*PX_PER_SECOND + 5, y_words + 15,
+                start_x + (current_time/1000)*PX_PER_SECOND + 5, y_words + 12,
                 text=word.text, anchor="w", font=('Segoe UI', 8)
             )
             
@@ -1003,9 +1340,6 @@ class VSubApp:
             if word.image_path:
                 img_start = word.image_start_ms if word.image_start_ms is not None else current_time
                 img_duration = word.image_duration_ms
-                
-                # Check for overlap/replacement based on simple logic
-                # For visualization, we just draw them. Real conflict resolution happens in export.
                 
                 self.timeline_canvas.create_rectangle(
                     start_x + (img_start/1000)*PX_PER_SECOND, y_images,
@@ -1015,11 +1349,32 @@ class VSubApp:
                 
                 # Truncate filename
                 fname = os.path.basename(word.image_path)
-                if len(fname) > 15: fname = fname[:12] + "..."
+                if len(fname) > 12: fname = fname[:9] + "..."
                 
                 self.timeline_canvas.create_text(
-                    start_x + (img_start/1000)*PX_PER_SECOND + 5, y_images + 15,
-                    text=f"📷 {fname}", anchor="w", font=('Segoe UI', 8)
+                    start_x + (img_start/1000)*PX_PER_SECOND + 5, y_images + 12,
+                    text=f"📷 {fname}", anchor="w", font=('Segoe UI', 7)
+                )
+            
+            # Draw Audio Block if exists
+            if word.audio_path:
+                audio_start = word.audio_start_ms if word.audio_start_ms is not None else current_time
+                # Use audio_duration_ms if specified, otherwise estimate
+                audio_duration = word.audio_duration_ms if word.audio_duration_ms else 1000
+                
+                self.timeline_canvas.create_rectangle(
+                    start_x + (audio_start/1000)*PX_PER_SECOND, y_audio,
+                    start_x + ((audio_start + audio_duration)/1000)*PX_PER_SECOND, y_audio + height_block,
+                    fill="#c0d0f0", outline="#8080c0"
+                )
+                
+                # Truncate filename
+                fname = os.path.basename(word.audio_path)
+                if len(fname) > 12: fname = fname[:9] + "..."
+                
+                self.timeline_canvas.create_text(
+                    start_x + (audio_start/1000)*PX_PER_SECOND + 5, y_audio + 12,
+                    text=f"🔊 {fname}", anchor="w", font=('Segoe UI', 7)
                 )
                 
             current_time += duration_ms
@@ -1034,6 +1389,12 @@ class VSubApp:
              self.btn_apply_lib_img.config(state=state)
         if hasattr(self, 'btn_customize_img'):
              self.btn_customize_img.config(state=state)
+        if hasattr(self, 'btn_apply_audio'):
+             self.btn_apply_audio.config(state=state)
+        if hasattr(self, 'btn_customize_audio'):
+             self.btn_customize_audio.config(state=state)
+        if hasattr(self, 'btn_clear_media'):
+             self.btn_clear_media.config(state=state)
 
     def on_word_click(self, word, idx):
         self.selected_word = word
@@ -1182,6 +1543,17 @@ class VSubApp:
         for i, s in enumerate(self.generator.sentences):
             text_preview = (s.text[:30] + '..') if len(s.text) > 30 else s.text
             self.sentence_list.insert(tk.END, f"{i+1}: {text_preview}")
+        
+        # Also update the library tab sentence selector
+        if hasattr(self, 'lib_sentence_combo'):
+            sentence_options = []
+            for i, s in enumerate(self.generator.sentences):
+                text_preview = (s.text[:50] + '...') if len(s.text) > 50 else s.text
+                sentence_options.append(f"{i+1}: {text_preview}")
+            
+            self.lib_sentence_combo['values'] = sentence_options
+            if sentence_options and self.current_sentence_index < len(sentence_options):
+                self.lib_sentence_combo.current(self.current_sentence_index)
     
     def on_frame_configure(self, event=None):
         """Update scroll region when frame size changes"""
@@ -1303,6 +1675,10 @@ class VSubApp:
                     with open(timestamp_file_srt, 'w', encoding='utf-8') as f:
                         f.write(self.generator.export_timestamps(sentences_data, 'srt'))
                     
+                    # Auto-populate config file in video generation section
+                    self.root.after(0, lambda: self.config_entry.delete(0, tk.END))
+                    self.root.after(0, lambda: self.config_entry.insert(0, config_file))
+                    
                     self.root.after(0, self.update_status, f"Saved to: {output_path}")
                     self.root.after(0, messagebox.showinfo, "Success", 
                                   f"Audio generated successfully!\n\n"
@@ -1317,6 +1693,48 @@ class VSubApp:
                 self.root.after(0, self.update_status, "Error occurred")
         
         threading.Thread(target=generate_async, daemon=True).start()
+
+    def start_video_generation(self):
+        """Start video generation from config file"""
+        if not VIDEO_GENERATION_AVAILABLE:
+            messagebox.showerror("Error", "Video generation is not available. Please ensure generate_video.py is in the same directory.")
+            return
+        
+        config_path = self.config_entry.get().strip()
+        if not config_path:
+            messagebox.showwarning("No Config File", "Please select a config file first.")
+            return
+        
+        if not os.path.exists(config_path):
+            messagebox.showerror("File Not Found", f"Config file not found: {config_path}")
+            return
+        
+        def generate_video_async():
+            try:
+                self.root.after(0, self.update_status, "Generating video...")
+                self.root.after(0, lambda: self.video_progress.start())
+                
+                # Run video generation
+                generate_video(config_path)
+                
+                self.root.after(0, lambda: self.video_progress.stop())
+                self.root.after(0, self.update_status, "Video generation completed!")
+                
+                # Show success message
+                output_video = os.path.splitext(config_path)[0] + ".mp4"
+                if os.path.exists(output_video):
+                    self.root.after(0, messagebox.showinfo, "Success", 
+                                  f"Video generated successfully!\n\nVideo: {os.path.basename(output_video)}")
+                else:
+                    self.root.after(0, messagebox.showwarning, "Warning", 
+                                  "Video generation completed but output file not found.")
+                    
+            except Exception as e:
+                self.root.after(0, lambda: self.video_progress.stop())
+                self.root.after(0, self.update_status, "Video generation failed")
+                self.root.after(0, messagebox.showerror, "Error", f"Failed to generate video:\n{str(e)}")
+        
+        threading.Thread(target=generate_video_async, daemon=True).start()
 
     def update_status(self, message):
         """Update status bar"""
@@ -1421,15 +1839,158 @@ class VSubApp:
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to load project: {str(e)}")
 
+    def apply_lib_audio(self):
+        """Apply selected audio from library to selected word"""
+        if not self.selected_word:
+            return
+            
+        # Get selected item from library
+        sel = self.audio_list.curselection()
+        if not sel:
+            messagebox.showwarning("Selection", "Please select an audio file in the Library > Sound Effects tab first.")
+            self.left_tabs.select(self.tab_library)
+            return
+            
+        path = self.audio_list.get(sel[0])
+        self.selected_word.audio_path = path
+        # Set defaults if needed/not set
+        self.selected_word.audio_duration_ms = None  # Use full audio
+        self.selected_word.audio_volume = 1.0
+        self.selected_word.audio_start_ms = None # auto
+        
+        self.display_current_sentence()
+        self.update_status(f"Applied {os.path.basename(path)} to word")
+    
+    def open_audio_config(self):
+        """Open audio configuration dialog for selected word"""
+        if not self.selected_word:
+            return
+            
+        dialog = tk.Toplevel(self.root)
+        dialog.title(f"Audio Settings for '{self.selected_word.text}'")
+        dialog.geometry("400x400")
+        
+        word = self.selected_word
+        
+        # Audio Path
+        ttk.Label(dialog, text="Audio Path:").pack(anchor=tk.W, padx=10, pady=(10, 0))
+        path_frame = ttk.Frame(dialog)
+        path_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        path_var = tk.StringVar(value=word.audio_path if word.audio_path else "")
+        path_entry = ttk.Entry(path_frame, textvariable=path_var)
+        path_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        
+        def browse_audio():
+            filename = filedialog.askopenfilename(
+                title="Select Audio",
+                filetypes=[("Audio Files", "*.mp3 *.wav *.ogg *.m4a *.flac")]
+            )
+            if filename:
+                path_var.set(filename)
+        
+        def play_audio():
+            p = path_var.get()
+            if p and os.path.exists(p):
+                try:
+                    import winsound
+                    winsound.PlaySound(p, winsound.SND_FILENAME | winsound.SND_ASYNC)
+                except Exception as e:
+                    messagebox.showwarning("Playback Error", f"Could not play: {str(e)}")
+                    
+        ttk.Button(path_frame, text="Browse", command=browse_audio).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Button(path_frame, text="▶️ Play", command=play_audio).pack(side=tk.RIGHT, padx=(5, 0))
+        
+        # Audio info
+        info_lbl = ttk.Label(dialog, text="", relief=tk.SUNKEN, padding=5)
+        info_lbl.pack(fill=tk.X, padx=10, pady=5)
+
+        def update_info(*args):
+             p = path_var.get()
+             if p and os.path.exists(p):
+                 try:
+                     size_kb = os.path.getsize(p) / 1024
+                     filename = os.path.basename(p)
+                     info_lbl.config(text=f"File: {filename} | Size: {size_kb:.1f} KB")
+                 except:
+                     info_lbl.config(text="")
+             else:
+                 info_lbl.config(text="No audio file selected")
+
+        path_var.trace_add('write', update_info)
+        update_info()
+
+        # Duration (optional - None means use full audio)
+        ttk.Label(dialog, text="Duration (ms): (Leave at 0 for full duration)").pack(anchor=tk.W, padx=10, pady=(10, 0))
+        duration_var = tk.IntVar(value=word.audio_duration_ms if word.audio_duration_ms else 0)
+        duration_scale = ttk.Scale(dialog, from_=0, to=5000, variable=duration_var, orient=tk.HORIZONTAL)
+        duration_scale.pack(fill=tk.X, padx=10, pady=5)
+        ttk.Label(dialog, textvariable=duration_var).pack()
+        
+        # Volume
+        ttk.Label(dialog, text="Volume:").pack(anchor=tk.W, padx=10, pady=(10, 0))
+        volume_var = tk.DoubleVar(value=word.audio_volume)
+        volume_scale = ttk.Scale(dialog, from_=0.0, to=1.0, variable=volume_var, orient=tk.HORIZONTAL)
+        volume_scale.pack(fill=tk.X, padx=10, pady=5)
+        volume_lbl = ttk.Label(dialog, text="")
+        volume_lbl.pack()
+        
+        def update_volume_label(*args):
+            volume_lbl.config(text=f"{volume_var.get():.2f}")
+        
+        volume_var.trace_add('write', update_volume_label)
+        update_volume_label()
+        
+        # Start offset (relative to word start)
+        ttk.Label(dialog, text="Start Offset (ms): (Relative to word start)").pack(anchor=tk.W, padx=10, pady=(10, 0))
+        offset_var = tk.IntVar(value=word.audio_start_ms if word.audio_start_ms is not None else 0)
+        offset_scale = ttk.Scale(dialog, from_=-1000, to=2000, variable=offset_var, orient=tk.HORIZONTAL)
+        offset_scale.pack(fill=tk.X, padx=10, pady=5)
+        ttk.Label(dialog, textvariable=offset_var).pack()
+        
+        # Buttons
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.pack(fill=tk.X, padx=10, pady=20)
+        
+        def save():
+            word.audio_path = path_var.get() if path_var.get() else None
+            dur = int(duration_var.get())
+            word.audio_duration_ms = dur if dur > 0 else None
+            word.audio_volume = float(volume_var.get())
+            word.audio_start_ms = int(offset_var.get()) if word.audio_path else None
+            
+            self.display_current_sentence()
+            dialog.destroy()
+            
+        def clear():
+            path_var.set("")
+            
+        ttk.Button(btn_frame, text="Save", command=save).pack(side=tk.RIGHT)
+        ttk.Button(btn_frame, text="Clear Audio", command=clear).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side=tk.RIGHT, padx=5)
+    
+    def clear_media(self):
+        """Clear all media (image and audio) from selected word"""
+        if not self.selected_word:
+            return
+        
+        if self.selected_word.image_path or self.selected_word.audio_path:
+            if messagebox.askyesno("Confirm", "Clear all media (image and audio) from this word?"):
+                self.selected_word.image_path = None
+                self.selected_word.image_start_ms = None
+                self.selected_word.audio_path = None
+                self.selected_word.audio_start_ms = None
+                self.selected_word.audio_duration_ms = None
+                self.display_current_sentence()
+                self.update_status("Media cleared")
+        else:
+            messagebox.showinfo("Info", "No media attached to this word")
+
     def insert_sample_text(self):
         """Insert sample text into input area"""
         sample = """Old Roblox was SO much better and I'm tired of pretending it's not. Like, we had GUESTS. Those yellow dudes just hanging out in every game. Roblox deleted them for "being confusing." Bruh what? And remember TIX? Free currency just for logging in? You could earn Robux without paying. Now? Everything costs money."""
         self.text_input.delete("1.0", tk.END)
         self.text_input.insert("1.0", sample)
-
-    def update_status(self, message):
-        """Update status bar"""
-        self.status_var.set(message)
 
 def main():
     root = tk.Tk()
